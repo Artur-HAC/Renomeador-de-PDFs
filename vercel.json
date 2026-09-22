@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/ocr.mjs": {
+    "ocr.mjs": {
       "maxDuration": 60
     }
   }
