@@ -1,0 +1,10 @@
+{
+  "name": "renomeador-pdfs-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicação web para extrair TAG e data manuscritas de PDFs escaneados e renomeá-los.",
+  "engines": {
+    "node": ">=20"
+  }
+}

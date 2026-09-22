@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Renomeador de PDFs — TAG + DATA</title>
+  <meta name="description" content="Reconhece TAG e data manuscritas em PDFs escaneados e gera os arquivos renomeados.">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <p class="eyebrow">AUTOMAÇÃO DE DOCUMENTOS</p>
+        <h1>Renomeador de PDFs</h1>
+        <p class="subtitle">TAG + DATA manuscritas → PDF renomeado</p>
+      </div>
+      <div class="rules">
+        <span>1BL44</span>
+        <span>MRO 01</span>
+        <span>MRO 02</span>
+        <span>1BL29</span>
+        <span>MRO 07</span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div id="dropzone" class="dropzone">
+        <div class="drop-icon">PDF</div>
+        <h2>Arraste os PDFs para cá</h2>
+        <p>ou selecione vários arquivos de uma vez</p>
+        <label class="button primary" for="fileInput">Selecionar PDFs</label>
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden>
+        <p id="selectedCount" class="selected-count">0 arquivos selecionados</p>
+      </div>
+
+      <div class="actions">
+        <button id="processBtn" class="button primary" disabled>Processar documentos</button>
+        <button id="clearBtn" class="button secondary" disabled>Limpar</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <p id="status" class="status">Pronto para receber os PDFs.</p>
+    </section>
+
+    <section id="resultsSection" class="card" hidden>
+      <div class="section-heading">
+        <div>
+          <h2>Conferência</h2>
+          <p>Corrija qualquer resultado marcado como <strong>Revisar</strong>.</p>
+        </div>
+        <button id="downloadBtn" class="button primary" disabled>Baixar ZIP</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Arquivo original</th>
+              <th>TAG</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th>Nome final</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="emptyState" class="info card">
+      <h2>Como funciona</h2>
+      <ol>
+        <li>Envie os PDFs escaneados.</li>
+        <li>O sistema lê a TAG e a data da primeira página.</li>
+        <li>Você confere os resultados.</li>
+        <li>Baixe um ZIP com os PDFs originais já renomeados.</li>
+      </ol>
+      <p><strong>Padrão:</strong> <code>MRO 02 - 14.09.pdf</code></p>
+      <p class="muted">A primeira versão foi ajustada para o layout do formulário de exemplo enviado.</p>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.3.289/pdf.min.mjs" type="module"></script>
+  <script>
+    // O módulo PDF.js expõe pdfjsLib via import; carregamos app.js depois que o módulo terminar.
+    import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/6.3.289/pdf.min.mjs")
+      .then((pdfjsLib) => {
+        window.pdfjsLib = pdfjsLib;
+        const script = document.createElement("script");
+        script.src = "/app.js";
+        document.body.appendChild(script);
+      })
+      .catch((err) => {
+        document.getElementById("status").textContent = "Não foi possível carregar o PDF.js.";
+        console.error(err);
+      });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</body>
+</html>

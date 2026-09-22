@@ -1,210 +1,86 @@
-# Renomeador de PDFs
+# Renomeador de PDFs — TAG + DATA
 
-Aplicação web desenvolvida para automatizar a identificação e renomeação de documentos PDF a partir de informações manuscritas presentes na primeira página.
+Aplicação web para processar PDFs escaneados de formulários com campos manuscritos.
 
-O sistema utiliza **OCR (Optical Character Recognition)** através do **Google Cloud Vision API** para identificar a **TAG do equipamento** e a **data** registrada no formulário, permitindo renomear vários arquivos de forma rápida e padronizada.
+## Regra atual
 
-## Objetivo
+TAGs válidas:
 
-O projeto foi desenvolvido para reduzir o trabalho manual de organização de documentos e evitar erros durante a renomeação de arquivos.
+- 1BL44
+- MRO 01
+- MRO 02
+- 1BL29
+- MRO 07
 
-Em vez de renomear cada PDF manualmente:
+Formato de saída:
 
-```text
-SCAN001.pdf
-SCAN002.pdf
-SCAN003.pdf
-```
-
-o sistema identifica automaticamente as informações presentes nos documentos e gera nomes padronizados:
-
-```text
-MRO 02 - 14.09.pdf
-1BL44 - 15.09.pdf
-MRO 07 - 16.09.pdf
-```
-
-## Funcionamento
-
-O fluxo principal da aplicação é:
-
-```text
-PDFs
-  │
-  ▼
-Leitura da primeira página
-  │
-  ▼
-Conversão para imagem
-  │
-  ▼
-Google Cloud Vision OCR
-  │
-  ▼
-Identificação da TAG + DATA
-  │
-  ▼
-Validação dos resultados
-  │
-  ▼
-Conferência pelo usuário
-  │
-  ▼
-Renomeação
-  │
-  ▼
-Download dos PDFs em ZIP
-```
-
-## TAGs suportadas
-
-A primeira versão trabalha com as seguintes TAGs:
-
-* `1BL44`
-* `MRO 01`
-* `MRO 02`
-* `1BL29`
-* `MRO 07`
-
-O sistema também possui tolerância para pequenos erros de reconhecimento do OCR.
-
-## Formato das datas
-
-As datas são identificadas e mantidas no padrão:
-
-```text
-DD.MM
-```
+`[TAG] - [DATA].pdf`
 
 Exemplo:
 
-```text
-14.09
-25.10
-03.11
-```
+`MRO 02 - 14.09.pdf`
 
-## Exemplo
+A data é mantida no padrão `DD.MM`.
 
-Entrada:
+## Como funciona
 
-```text
-documento_001.pdf
-```
+1. O navegador recebe vários PDFs.
+2. PDF.js renderiza a primeira página de cada PDF como imagem.
+3. O navegador recorta as regiões de DATA e TAG do formulário.
+4. O backend `/api/ocr` envia cada recorte para o Google Cloud Vision.
+5. A aplicação normaliza o OCR e compara a TAG com a lista permitida.
+6. O usuário revisa/corrige os resultados.
+7. O navegador gera um ZIP com os PDFs originais, apenas com os nomes alterados.
 
-Informações identificadas:
+## Requisito externo
 
-```text
-TAG: MRO 02
-DATA: 14.09
-```
+O backend usa a API Cloud Vision `DOCUMENT_TEXT_DETECTION`, que suporta OCR de documentos e escrita à mão.
 
-Resultado:
+É necessário criar uma chave de API no Google Cloud e habilitar a Cloud Vision API.
 
-```text
-MRO 02 - 14.09.pdf
-```
+A chave deve ficar somente no servidor, em uma variável de ambiente:
 
-## Principais recursos
+`GOOGLE_VISION_API_KEY`
 
-* Upload de múltiplos PDFs
-* Arrastar e soltar arquivos
-* Processamento automático
-* Leitura da primeira página
-* OCR para escrita manuscrita
-* Identificação automática de TAG
-* Identificação automática de data
-* Correção aproximada de erros do OCR
-* Conferência dos resultados antes da renomeação
-* Correção manual de TAG e data
-* Detecção de nomes duplicados
-* Geração de arquivo ZIP
-* Preservação do conteúdo original dos PDFs
+Nunca coloque essa chave no `index.html`.
 
-## Tecnologias
+## Deploy sem instalar nada no PC do trabalho
 
-### Front-end
+A forma mais simples é publicar este projeto na Vercel.
 
-* HTML
-* CSS
-* JavaScript
-* PDF.js
+No computador usado para fazer o deploy:
 
-### Back-end
+1. Crie um projeto na Vercel.
+2. Importe este projeto/repositório.
+3. Em Environment Variables, crie:
+   - Nome: `GOOGLE_VISION_API_KEY`
+   - Valor: sua chave da API Vision
+4. Faça o deploy.
+5. No computador do trabalho, abra a URL gerada no navegador.
 
-* Node.js
-* Vercel Functions
-* Google Cloud Vision API
+Não é necessário instalar VS Code, Python ou Node.js no computador que vai usar o sistema.
 
-### OCR
+## Desenvolvimento local
 
-O reconhecimento de texto é realizado através do:
+Opcional. Requer Node.js e Vercel CLI:
 
-**Google Cloud Vision API — Document Text Detection**
+`npm install -g vercel`
 
-A API é utilizada para extrair informações dos formulários, incluindo texto manuscrito.
+Depois:
 
-## Estrutura do projeto
+`vercel dev`
 
-```text
-renomeador-pdfs-web/
-│
-├── api/
-│   └── ocr.mjs
-│
-├── public/
-│   └── app.js
-│
-├── index.html
-├── style.css
-├── package.json
-├── vercel.json
-├── .gitignore
-└── README.md
-```
+Mas isso é apenas para desenvolvimento. O uso normal pode ser totalmente pelo navegador.
 
-## Configuração
+## Observações importantes
 
-Para utilizar o OCR, é necessário possuir um projeto no Google Cloud com a **Cloud Vision API** habilitada.
+- A primeira versão processa a primeira página de cada PDF.
+- O formulário precisa manter aproximadamente o mesmo layout do exemplo enviado.
+- As áreas de TAG e DATA estão configuradas como proporções da página e podem ser ajustadas em `public/app.js`.
+- O sistema não altera o conteúdo do PDF. Ele somente usa a imagem para reconhecer os campos e depois coloca o PDF original no ZIP com o novo nome.
+- Se o OCR não tiver segurança suficiente, o item fica como "Revisar".
+- Se dois PDFs resultarem no mesmo nome, o sistema adiciona `(2)`, `(3)` etc. para evitar sobrescrever arquivos.
 
-As credenciais do Google Cloud devem ser configuradas através de variáveis de ambiente ou do mecanismo de autenticação apropriado para o ambiente de execução.
+## Segurança e dados
 
-**Nunca coloque credenciais ou chaves privadas diretamente no código ou no repositório.**
-
-## Segurança
-
-Este projeto foi desenvolvido para manter as credenciais do Google Cloud no ambiente do servidor.
-
-Os PDFs são processados para identificação das informações necessárias à renomeação e não são alterados durante o processo.
-
-Antes de utilizar documentos reais, especialmente documentos corporativos, é importante verificar as políticas da organização relacionadas ao envio de arquivos para serviços externos de OCR.
-
-## Status
-
-**Versão atual: v1.0**
-
-A primeira versão está focada na automação do processo de:
-
-```text
-PDF → OCR → TAG + DATA → Conferência → Renomeação
-```
-
-## Próximos passos
-
-Possíveis melhorias futuras:
-
-* Aumentar a precisão do OCR para diferentes tipos de escrita
-* Melhorar a detecção automática das regiões do formulário
-* Processamento de grandes quantidades de arquivos
-* Histórico de processamentos
-* Relatório de erros de OCR
-* Configurações personalizáveis de TAGs
-* Interface de configuração das regras de nomenclatura
-* Melhor tratamento de documentos com baixa qualidade
-* Suporte a novos modelos de formulários
-
-## Licença
-
-Projeto desenvolvido para fins de automação e organização de documentos.
-
-A licença do projeto pode ser definida conforme a finalidade de distribuição do software.
+Os recortes enviados ao backend são encaminhados ao serviço de OCR configurado. Para documentos de trabalho, confirme com a empresa se o uso de um serviço externo de OCR é permitido antes de colocar documentos reais no sistema.
