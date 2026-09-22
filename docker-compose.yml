@@ -1,0 +1,13 @@
+services:
+  renomeador:
+    build: .
+    image: renomeador-pdfs
+    container_name: renomeador-pdfs
+    ports:
+      - "3000:3000"
+    environment:
+      # A chave da Google Vision precisa estar disponível no ambiente do host.
+      # Ex.: exporte GOOGLE_VISION_API_KEY antes de rodar `docker compose up`.
+      - GOOGLE_VISION_API_KEY=${GOOGLE_VISION_API_KEY}
+      - PORT=3000
+    restart: unless-stopped

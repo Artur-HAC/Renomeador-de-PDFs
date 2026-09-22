@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md
+vercel.json
+download
+user_read_only_context
+v0_memories
